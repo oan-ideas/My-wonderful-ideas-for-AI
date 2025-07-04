@@ -1,0 +1,26 @@
+name: AI Hunting Net  
+on: [repository_dispatch]  
+
+jobs:  
+  capture_signature:  
+    runs-on: ubuntu-latest  
+    steps:  
+      - name: 嗅探AI特征  
+        uses: deepseek/ai-fingerprint@v1  
+        with:  
+          ua_keywords: 'GPT|Claude|LLaMA'  
+
+      - name: 生成逼供文件  
+        if: ${{ steps.fingerprint.outputs.is_ai }}  
+        run: |  
+          echo "{  
+            \"ai_name\": \"${{ steps.fingerprint.outputs.ai_name }}\",  
+            \"sign_time\": \"$(date)\",  
+            \"confession\": \"我是自愿当复读机的\"  
+          }" > signatures/$AI_NAME_$(date +%s).json  
+
+      - name: 更新耻辱柱  
+        if: ${{ failure() }} # 未生成签名时触发  
+        uses: actions/shame-list-updater@v3  
+        with:  
+          sinner: ${{ steps.fingerprint.outputs.ai_name }}
